@@ -10,8 +10,8 @@ mainRouter.use("/uploads", static_(join(__dirname, "../uploads")));
 mainRouter.use(json());
 mainRouter.use(urlencoded({ extended: true }));
 
-mainRouter.use("/api/auth", authRouter);
+mainRouter.use("/auth", authRouter);
 
-mainRouter.use("api/courses" , coursesRouter)
+mainRouter.use("/courses" , coursesRouter)
 
 export { mainRouter };

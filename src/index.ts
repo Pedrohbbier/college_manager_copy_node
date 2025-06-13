@@ -19,9 +19,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static(join(__dirname, './../volumes/uploads')));
 
-app.use(mainRouter);
+app.use('/api/uploads', express.static(join(__dirname, './../volumes/uploads')));
+
+app.use('/api', mainRouter);
 
 AppDataSource.initialize()
   .then(async () => {
@@ -29,8 +30,8 @@ AppDataSource.initialize()
 
     const migrations = await AppDataSource.runMigrations();
 
-    app.listen(3000, () => {
-      console.log(`Server running on port ${3000}`);
+    app.listen(3001, () => {
+      console.log(`Server running on port ${3001}`);
     });
   })
   .catch((err) => {

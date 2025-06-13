@@ -7,10 +7,8 @@ import { User } from "../entity/User";
 
 class AuthController {
 
-    private userRepo = AppDataSource.getRepository(User);
-
     async register(req: Request, res: Response): Promise<void> {
-        const { email, password, name, role } = req.body;
+        const { email, password, name } = req.body;
 
         if (!email || !password) {
             res.status(400).json({ message: "Email e senha são obrigatórios." , success: false });
@@ -22,31 +20,28 @@ class AuthController {
             return;
         }
 
-        if (!role) {
-            res.status(400).json({ message: "Função é obrigatória." , success: false });
-            return;
-        }
-
         let firebaseId = null;
 
         try {
             const firebaseUser = await auth.createUser({ email, password });
             firebaseId = firebaseUser.uid;
 
-            const newUser = this.userRepo.create({
+            const userRepoSitory = AppDataSource.getRepository(User);
+
+            const newUser = userRepoSitory.create({
                 firebaseUid: firebaseUser.uid,
                 email,
                 name,
             });
 
-            const existingUser = await this.userRepo.findOneBy({ email });
+            const existingUser = await userRepoSitory.findOneBy({ email });
 
             if (existingUser) {
                 res.status(400).json({ message: "Email já cadastrado.", success: false });
                 return;
             }
 
-            const savedUser = await this.userRepo.save(newUser);
+            const savedUser = await userRepoSitory.save(newUser);
 
             const token = jwt.sign(
                 { id: savedUser.id, uid: firebaseUser.uid, email: savedUser.email },
@@ -91,13 +86,14 @@ class AuthController {
 
             const { localId, email: firebaseEmail } = response.data;
 
+            const userRepoSitory = AppDataSource.getRepository(User);
 
-            let user = await this.userRepo.findOneBy({ firebaseUid: localId });
+            let user = await userRepoSitory.findOneBy({ firebaseUid: localId });
 
 
             if (!user) {
-                user = this.userRepo.create({ firebaseUid: localId, email: firebaseEmail });
-                await this.userRepo.save(user);
+                user = userRepoSitory.create({ firebaseUid: localId, email: firebaseEmail });
+                await userRepoSitory.save(user);
             }
 
             const token = jwt.sign(

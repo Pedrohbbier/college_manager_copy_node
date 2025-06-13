@@ -4,11 +4,12 @@ import { Course } from "../entity/Course";
 
 class CourseController {
 
-    private courseRepo = AppDataSource.getRepository(Course);
-
     async listAll(req: Request, res: Response): Promise<void> {
         try {
-            const courses = await this.courseRepo.find();
+
+            const courseRepository = AppDataSource.getRepository(Course);
+
+            const courses = await courseRepository.find();
             res.status(200).json({
                 message: "Lista de cursos obtida com sucesso",
                 data: { courses },
@@ -28,7 +29,10 @@ class CourseController {
     async getById(req: Request, res: Response): Promise<void> {
         const { id } = req.params;
         try {
-            const course = await this.courseRepo.findOneBy({ id: Number(id) });
+
+            const courseRepository = AppDataSource.getRepository(Course);
+
+            const course = await courseRepository.findOneBy({ id: Number(id) });
             if (!course) {
                 res.status(404).json({
                     message: "Curso não encontrado",
@@ -53,7 +57,7 @@ class CourseController {
     }
 
     async create(req: Request, res: Response): Promise<void> {
-        const { name, description, image, modality, type, enade } = req.body;
+        const { name, description, modality, type, enade } = req.body;
         if (!name) {
             res.status(400).json({
                 message: "O campo 'name' é obrigatório.",
@@ -67,17 +71,18 @@ class CourseController {
             let imagePath;
 
             if (req.files) {
-                const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-
-
-                if (files['image']) {
-                    const image = files['image'][0];
-                    const imagePath = `uploads/${image.filename}`;
-                }
+                if (Array.isArray(req.files)) {
+                    const file = req.files[0] as Express.Multer.File;
+                    if (file && file.filename) {
+                        imagePath = `uploads/${file.filename}`;
+                    }
+                } 
             }
 
+            const courseRepository = AppDataSource.getRepository(Course);
 
-            const newCourse = this.courseRepo.create({
+
+            const newCourse = courseRepository.create({
                 name,
                 description,
                 modality,
@@ -86,7 +91,7 @@ class CourseController {
                 image: imagePath,
             });
 
-            const saved = await this.courseRepo.save(newCourse);
+            const saved = await courseRepository.save(newCourse);
 
             res.status(201).json({
                 message: "Curso criado com sucesso",
@@ -109,7 +114,10 @@ class CourseController {
         const { name, description, image, modality, type, enade } = req.body;
 
         try {
-            const course = await this.courseRepo.findOneBy({ id: Number(id) });
+
+            const courseRepository = AppDataSource.getRepository(Course);
+
+            const course = await courseRepository.findOneBy({ id: Number(id) });
             if (!course) {
                 res.status(404).json({
                     message: "Curso não encontrado",
@@ -129,8 +137,8 @@ class CourseController {
                 }
             }
 
-            this.courseRepo.merge(course, { name, description, image: imagePath, modality, type, enade });
-            const updated = await this.courseRepo.save(course);
+            courseRepository.merge(course, { name, description, image: imagePath, modality, type, enade });
+            const updated = await courseRepository.save(course);
 
             res.status(200).json({
                 message: "Curso atualizado com sucesso",
@@ -151,7 +159,9 @@ class CourseController {
     async remove(req: Request, res: Response): Promise<void> {
         const { id } = req.params;
         try {
-            const result = await this.courseRepo.delete({ id: Number(id) });
+            const courseRepository = AppDataSource.getRepository(Course);
+
+            const result = await courseRepository.delete({ id: Number(id) });
             if (result.affected === 0) {
                 res.status(404).json({
                     message: "Curso não encontrado",
