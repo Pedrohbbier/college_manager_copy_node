@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${PORT}:3000"
+    volumes:
+      - ./volumes/dev/logs:/app/logs
+      - ./uploads:/app/uploads 
+    env_file:
+      - ./.env
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+  mysql:
+    image: mysql:9.0
+    container_name: mysql-college-manager
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./volumes/dev/mysql:/var/lib/mysql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin-college-manager
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

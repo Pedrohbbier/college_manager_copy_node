@@ -1,0 +1,6 @@
+.env
+/dist
+/node_modules
+/volumes
+src/config/firebase/admin_credentials.json
+/.devcontainer

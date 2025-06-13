@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "CommonJS",
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "strict": true,
+        "resolveJsonModule": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strictPropertyInitialization": false,
+    },
+    "include": [ "src" ,  "./src/**/*", "./src/**/*.json"],
+    "exclude": ["node_modules"]
+}
